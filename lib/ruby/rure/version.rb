@@ -1,0 +1,5 @@
+module Ruby
+  module Rure
+    VERSION = "0.1.0"
+  end
+end
