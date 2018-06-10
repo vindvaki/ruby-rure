@@ -22,8 +22,21 @@ module Rure
       match_ptr = CRure::RureMatchPtr.new
       found = CRure.rure_find(@c_rure, data, data.size, start, match_ptr)
       return nil unless found
-      c_match = match_ptr[:value]
-      Match.new(c_match[:start], c_match[:end])
+      match_ptr.to_ruby
+    end
+
+    def matches(haystack)
+      c_iter = CRure.rure_iter_new(@c_rure)
+      data = haystack_ptr(haystack)
+      enum = Enumerator.new do |yielder|
+        match_ptr = CRure::RureMatchPtr.new
+        found = CRure.rure_iter_next(@c_rure, data, data.size, match_ptr)
+        if found
+          yielder << match_ptr.to_ruby
+        end
+      end
+      ObjectSpace.define_finalizer(enum, proc { CRure.rure_iter_free(c_iter) })
+      enum
     end
 
     private
@@ -33,7 +46,6 @@ module Rure
       data.put_bytes(0, haystack)
       data
     end
-
   end
 
   module CRure
@@ -45,10 +57,18 @@ module Rure
       layout \
         :start, :size_t,
         :end, :size_t
+
+      def to_ruby
+        Match.new(self[:start], self[:end])
+      end
     end
 
     class RureMatchPtr < FFI::Struct
       layout :value, RureMatch
+
+      def to_ruby
+        self[:value].to_ruby
+      end
     end
 
     attach_function :rure_compile_must, [:string], :pointer
@@ -59,5 +79,9 @@ module Rure
     attach_function :rure_find, [:pointer, :pointer, :size_t, :size_t, RureMatchPtr], :bool
 
     attach_function :rure_shortest_match, [:pointer, :pointer, :size_t, :size_t, :size_t], :bool
+
+    attach_function :rure_iter_new, [:pointer], :pointer
+    attach_function :rure_iter_free, [:pointer], :pointer
+    attach_function :rure_iter_next, [:pointer, :pointer, :size_t, RureMatchPtr], :bool
   end
 end
