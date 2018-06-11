@@ -16,18 +16,18 @@ Regexps are created using the /.../ and %r{...} literals, and by the
 Regexp::new constructor.
 EOF
     n = 10000
-    pattern = 'Regexp.*literals'
+    pattern = 'Regexp.*(literals)'
     x.report('ruby') do
       re = Regexp.new(pattern)
       n.times do
-        re.match?(text)
+        re.match(text)
       end
     end
 
     x.report('rure') do
       re = Rure::Regex.new(pattern)
       n.times do
-        re.match?(text)
+        re.find_captures(text)
       end
     end
   end
