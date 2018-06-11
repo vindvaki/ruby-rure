@@ -25,18 +25,20 @@ module Rure
       match_ptr.to_ruby
     end
 
-    def matches(haystack)
+    def each_match(haystack)
       c_iter = CRure.rure_iter_new(@c_rure)
-      data = haystack_ptr(haystack)
       enum = Enumerator.new do |yielder|
+        data = haystack_ptr(haystack)
         match_ptr = CRure::RureMatchPtr.new
-        found = CRure.rure_iter_next(@c_rure, data, data.size, match_ptr)
-        if found
+        loop do
+          found = CRure.rure_iter_next(c_iter, data, data.size, match_ptr)
+          break unless found
           yielder << match_ptr.to_ruby
         end
       end
       ObjectSpace.define_finalizer(enum, proc { CRure.rure_iter_free(c_iter) })
-      enum
+      return enum unless block_given?
+      enum.each { |match| yield(match) }
     end
 
     private
