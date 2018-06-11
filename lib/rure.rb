@@ -3,9 +3,10 @@ require 'rure/version'
 require 'ffi'
 
 module Rure
-  Match = Struct.new(:start, :end)
-
   class Regex
+    attr_reader :c_rure
+    attr_reader :pattern
+
     def initialize(pattern)
       @pattern = pattern
       @c_rure = CRure.rure_compile_must(pattern)
@@ -22,7 +23,15 @@ module Rure
       match_ptr = CRure::RureMatchPtr.new
       found = CRure.rure_find(@c_rure, data, data.size, start, match_ptr)
       return nil unless found
-      match_ptr.to_ruby
+      match = match_ptr.to_ruby(haystack)
+    end
+
+    def find_captures(haystack, start = 0)
+      data = haystack_ptr(haystack)
+      capture = Captures.new(@c_rure, haystack)
+      found = CRure.rure_find_captures(@c_rure, data, data.size, start, capture.c_captures)
+      return nil unless found
+      capture
     end
 
     def each_match(haystack)
@@ -33,7 +42,7 @@ module Rure
         loop do
           found = CRure.rure_iter_next(c_iter, data, data.size, match_ptr)
           break unless found
-          yielder << match_ptr.to_ruby
+          yielder << match_ptr.to_ruby(haystack)
         end
       end
       ObjectSpace.define_finalizer(enum, proc { CRure.rure_iter_free(c_iter) })
@@ -50,6 +59,46 @@ module Rure
     end
   end
 
+  Match = Struct.new(:haystack, :start, :end)
+
+  class Match
+    def to_s
+      haystack[self.start...self.end]
+    end
+  end
+
+  class Captures
+    include Enumerable
+
+    attr_reader :c_captures, :haystack
+
+    def initialize(c_rure, haystack)
+      @c_captures = CRure.rure_captures_new(c_rure)
+      @haystack = haystack
+      ObjectSpace.define_finalizer(self, proc { CRure.rure_captures_free(@c_captures) })
+    end
+
+    def match_at(i)
+      match_ptr = CRure::RureMatchPtr.new
+      found = CRure.rure_captures_at(@c_captures, i, match_ptr)
+      return nil unless found
+      match_ptr.to_ruby(haystack)
+    end
+
+    alias [] match_at
+
+    def size
+      CRure.rure_captures_len(@c_captures)
+    end
+
+    alias length size
+
+    def each
+      to_enum unless block_given?
+      (0...size).each { |i| yield(self[i]) }
+    end
+  end
+
   module CRure
     extend FFI::Library
     # FIXME: Bundle lib as part of gem
@@ -60,16 +109,16 @@ module Rure
         :start, :size_t,
         :end, :size_t
 
-      def to_ruby
-        Match.new(self[:start], self[:end])
+      def to_ruby(haystack)
+        Match.new(haystack, self[:start], self[:end])
       end
     end
 
     class RureMatchPtr < FFI::Struct
       layout :value, RureMatch
 
-      def to_ruby
-        self[:value].to_ruby
+      def to_ruby(haystack)
+        self[:value].to_ruby(haystack)
       end
     end
 
@@ -79,11 +128,17 @@ module Rure
 
     attach_function :rure_is_match, [:pointer, :pointer, :size_t, :size_t], :bool
     attach_function :rure_find, [:pointer, :pointer, :size_t, :size_t, RureMatchPtr], :bool
+    attach_function :rure_find_captures, [:pointer, :pointer, :size_t, :size_t, :pointer], :bool
 
     attach_function :rure_shortest_match, [:pointer, :pointer, :size_t, :size_t, :size_t], :bool
 
     attach_function :rure_iter_new, [:pointer], :pointer
     attach_function :rure_iter_free, [:pointer], :pointer
     attach_function :rure_iter_next, [:pointer, :pointer, :size_t, RureMatchPtr], :bool
+
+    attach_function :rure_captures_new, [:pointer], :pointer
+    attach_function :rure_captures_free, [:pointer], :void
+    attach_function :rure_captures_at, [:pointer, :size_t, RureMatchPtr], :bool
+    attach_function :rure_captures_len, [:pointer], :size_t
   end
 end
