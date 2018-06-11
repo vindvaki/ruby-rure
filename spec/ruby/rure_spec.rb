@@ -41,6 +41,10 @@ RSpec.describe Rure do
         it 'should capture "ab" and "b"' do
           expect(captures.to_a.map(&:to_s)).to eq %w(ab b)
         end
+
+        it 'should index "b" at 1' do
+          expect(captures[1].to_s).to eq 'b'
+        end
       end
 
       context 'when a match does not exist' do
