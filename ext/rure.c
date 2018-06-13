@@ -1,6 +1,6 @@
 #include <ruby.h>
 #include "extconf.h"
-#include "regex-crate/regex-capi/include/rure.h"
+#include "regex-1.0.0/regex-capi/include/rure.h"
 
 static VALUE cRureRegex;
 static VALUE cRureMatch;
