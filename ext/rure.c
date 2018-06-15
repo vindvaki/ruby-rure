@@ -188,6 +188,6 @@ void Init_rure() {
     rb_define_method(cRureCaptures, "initialize", rb_rure_captures_initialize, 1);
     rb_define_alloc_func(cRureCaptures, rure_captures_data_alloc);
     rb_define_method(cRureCaptures, "length", rb_rure_captures_len, 0);
-    rb_define_method(cRureCaptures, "at", rb_rure_captures_at_index, 1);
+    rb_define_method(cRureCaptures, "at_index", rb_rure_captures_at_index, 1);
     rb_define_method(cRureCaptures, "at_name", rb_rure_captures_at_name, 1);
 }
