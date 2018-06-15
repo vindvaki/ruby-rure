@@ -7,6 +7,8 @@ p Rure::Regex.new("a.*c").find("xxabcrr").to_s
 
 p Rure::Regex.new("a.*c").find_captures("xxabcrr").at(0).to_s
 
+p Rure::Regex.new("a(?P<thename>.*)c").find_captures("xxabcrr").at_name('thename').to_s
+
 require 'benchmark'
 
 Benchmark.bm do |x|

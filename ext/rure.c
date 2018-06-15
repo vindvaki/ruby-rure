@@ -49,6 +49,7 @@ VALUE rb_rure_captures_initialize(VALUE self, VALUE regex) {
     rure_regex_data_t *regex_data;
     Data_Get_Struct(regex, rure_regex_data_t, regex_data);
     data->ptr = rure_captures_new(regex_data->ptr);
+    rb_iv_set(self, "@pattern", regex);
     return self;
 }
 
@@ -157,6 +158,27 @@ VALUE rb_rure_captures_at(VALUE self, VALUE index) {
     return Qnil;
 }
 
+VALUE rb_rure_captures_at_name(VALUE self, VALUE name) {
+    rure_captures_data_t *data;
+    Data_Get_Struct(self, rure_captures_data_t, data);
+    VALUE pattern = rb_iv_get(self, "@pattern");
+    rure_regex_data_t *regex_data;
+    VALUE regex = Data_Get_Struct(pattern, rure_regex_data_t, regex_data);
+    int32_t index = rure_capture_name_index(regex_data->ptr, StringValueCStr(name));
+    if (index == -1) {
+        return Qnil;
+    }
+    VALUE match = rb_funcall(cRureMatch, rb_intern("new"), 0);
+    rure_match *match_data;
+    Data_Get_Struct(match, rure_match, match_data);
+    bool found = rure_captures_at(data->ptr, index, match_data);
+    if (found) {
+        rb_iv_set(match, "@haystack", rb_iv_get(self, "@haystack"));
+        return match;
+    }
+    return Qnil;
+}
+
 void Init_rure() {
     VALUE mRure = rb_define_module("Rure");
     cRureRegex = rb_define_class_under(mRure, "Regex", rb_cObject);
@@ -177,4 +199,5 @@ void Init_rure() {
     rb_define_alloc_func(cRureCaptures, rure_captures_data_alloc);
     rb_define_method(cRureCaptures, "length", rb_rure_captures_len, 0);
     rb_define_method(cRureCaptures, "at", rb_rure_captures_at, 1);
+    rb_define_method(cRureCaptures, "at_name", rb_rure_captures_at_name, 1);
 }
