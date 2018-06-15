@@ -1,6 +1,6 @@
 #include <ruby.h>
 #include "extconf.h"
-#include "regex-1.0.0/regex-capi/include/rure.h"
+#include "regex-capi/include/rure.h"
 
 static VALUE cRureRegex;
 static VALUE cRureMatch;
@@ -108,7 +108,7 @@ VALUE rb_rure_regex_is_match(int argc, VALUE *argv, VALUE self) {
 VALUE rb_rure_regex_find(int argc, VALUE *argv, VALUE self) {
     VALUE haystack;
     VALUE rb_start;
-    rb_scan_args(argc, argv, "11", &haystack, &rb_start); 
+    rb_scan_args(argc, argv, "11", &haystack, &rb_start);
     VALUE haystack_rb_string_value = StringValue(haystack);
     uint8_t *haystack_ptr = RSTRING_PTR(haystack_rb_string_value);
     size_t haystack_len = RSTRING_LEN(haystack_rb_string_value);
@@ -129,7 +129,7 @@ VALUE rb_rure_regex_find(int argc, VALUE *argv, VALUE self) {
 VALUE rb_rure_regex_find_captures(int argc, VALUE *argv, VALUE self) {
     VALUE haystack;
     VALUE rb_start;
-    rb_scan_args(argc, argv, "11", &haystack, &rb_start); 
+    rb_scan_args(argc, argv, "11", &haystack, &rb_start);
     VALUE haystack_rb_string_value = StringValue(haystack);
     uint8_t *haystack_ptr = RSTRING_PTR(haystack_rb_string_value);
     size_t haystack_len = RSTRING_LEN(haystack_rb_string_value);
