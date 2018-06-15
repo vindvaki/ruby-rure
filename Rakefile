@@ -20,14 +20,14 @@ EOF
     x.report('ruby') do
       re = Regexp.new(pattern)
       n.times do
-        re.match(text)
+        re.match?(text)
       end
     end
 
     x.report('rure') do
       re = Rure::Regex.new(pattern)
       n.times do
-        re.find_captures(text)
+        re.match?(text)
       end
     end
   end
