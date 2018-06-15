@@ -1,8 +1,13 @@
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
+require "rake/extensiontask"
 require 'rure'
 
 RSpec::Core::RakeTask.new(:spec)
+
+Rake::ExtensionTask.new "rure" do |ext|
+  ext.lib_dir = "lib/rure"
+end
 
 task :default => :spec
 
