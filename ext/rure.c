@@ -144,7 +144,7 @@ VALUE rb_rure_captures_len(VALUE self) {
     return SIZET2NUM(rure_captures_len(data->ptr));
 }
 
-VALUE rb_rure_captures_at(VALUE self, VALUE index) {
+VALUE rb_rure_captures_at_index(VALUE self, VALUE index) {
     rure_captures_data_t *data;
     Data_Get_Struct(self, rure_captures_data_t, data);
     VALUE match = rb_funcall(cRureMatch, rb_intern("new"), 0);
@@ -159,8 +159,6 @@ VALUE rb_rure_captures_at(VALUE self, VALUE index) {
 }
 
 VALUE rb_rure_captures_at_name(VALUE self, VALUE name) {
-    rure_captures_data_t *data;
-    Data_Get_Struct(self, rure_captures_data_t, data);
     VALUE pattern = rb_iv_get(self, "@pattern");
     rure_regex_data_t *regex_data;
     VALUE regex = Data_Get_Struct(pattern, rure_regex_data_t, regex_data);
@@ -168,15 +166,7 @@ VALUE rb_rure_captures_at_name(VALUE self, VALUE name) {
     if (index == -1) {
         return Qnil;
     }
-    VALUE match = rb_funcall(cRureMatch, rb_intern("new"), 0);
-    rure_match *match_data;
-    Data_Get_Struct(match, rure_match, match_data);
-    bool found = rure_captures_at(data->ptr, index, match_data);
-    if (found) {
-        rb_iv_set(match, "@haystack", rb_iv_get(self, "@haystack"));
-        return match;
-    }
-    return Qnil;
+    return rb_rure_captures_at_index(self, INT2NUM(index));
 }
 
 void Init_rure() {
@@ -198,6 +188,6 @@ void Init_rure() {
     rb_define_method(cRureCaptures, "initialize", rb_rure_captures_initialize, 1);
     rb_define_alloc_func(cRureCaptures, rure_captures_data_alloc);
     rb_define_method(cRureCaptures, "length", rb_rure_captures_len, 0);
-    rb_define_method(cRureCaptures, "at", rb_rure_captures_at, 1);
+    rb_define_method(cRureCaptures, "at", rb_rure_captures_at_index, 1);
     rb_define_method(cRureCaptures, "at_name", rb_rure_captures_at_name, 1);
 }
