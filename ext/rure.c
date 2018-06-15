@@ -77,13 +77,14 @@ VALUE rb_rure_regex_initialize(VALUE self, VALUE pattern) {
     return self;
 }
 
-VALUE rb_rure_iter_initialize(VALUE self, VALUE regex) {
+VALUE rb_rure_iter_initialize(VALUE self, VALUE regex, VALUE haystack) {
     rure_iter_data_t *data;
     Data_Get_Struct(self, rure_iter_data_t, data);
     rure_regex_data_t *regex_data;
     Data_Get_Struct(regex, rure_regex_data_t, regex_data);
     data->ptr = rure_iter_new(regex_data->ptr);
     rb_iv_set(self, "@regex", regex);
+    rb_iv_set(self, "@haystack", haystack);
     return self;
 }
 
@@ -196,6 +197,25 @@ VALUE rb_rure_captures_at_name(VALUE self, VALUE name) {
     return rb_rure_captures_at_index(self, INT2NUM(index));
 }
 
+VALUE rb_rure_iter_next(VALUE self) {
+    VALUE haystack = rb_iv_get(self, "@haystack");
+    VALUE haystack_rb_string_value = StringValue(haystack);
+    uint8_t *haystack_ptr = RSTRING_PTR(haystack_rb_string_value);
+    size_t haystack_len = RSTRING_LEN(haystack_rb_string_value);
+
+    rure_iter_data_t* data;
+    Data_Get_Struct(self, rure_iter_data_t, data);
+    VALUE match = rb_funcall(cRureMatch, rb_intern("new"), 0);
+    rure_match *match_data;
+    Data_Get_Struct(match, rure_match, match_data);
+    bool found = rure_iter_next(data->ptr, haystack_ptr, haystack_len, match_data);
+    if (found) {
+        rb_iv_set(match, "@haystack", rb_iv_get(self, "@haystack"));
+        return match;
+    }
+    return Qnil;
+}
+
 void Init_rure() {
     VALUE mRure = rb_define_module("Rure");
     cRureRegex = rb_define_class_under(mRure, "Regex", rb_cObject);
@@ -219,6 +239,7 @@ void Init_rure() {
     rb_define_method(cRureCaptures, "at_name", rb_rure_captures_at_name, 1);
 
     cRureIter = rb_define_class_under(mRure, "Iter", rb_cObject);
-    rb_define_method(cRureIter, "initialize", rb_rure_iter_initialize, 1);
+    rb_define_method(cRureIter, "initialize", rb_rure_iter_initialize, 2);
     rb_define_alloc_func(cRureIter, rure_iter_data_alloc);
+    rb_define_method(cRureIter, "next", rb_rure_iter_next, 0);
 }
