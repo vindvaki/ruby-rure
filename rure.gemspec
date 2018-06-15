@@ -27,10 +27,8 @@ Gem::Specification.new do |spec|
   end
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
-
-  # TODO: Write fully native extension
-  spec.add_dependency "ffi", "~> 1.9"
+  spec.require_paths = ["lib", "ext"]
+  spec.extensions    = ["ext/rure/extconf.rb"]
 
   spec.add_development_dependency "bundler", "~> 1.16"
   spec.add_development_dependency "rake", "~> 10.0"

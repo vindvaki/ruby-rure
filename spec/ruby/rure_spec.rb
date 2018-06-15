@@ -19,11 +19,11 @@ RSpec.describe Rure do
     end
 
     describe '#find' do
-      subject { Rure::Regex.new('ab').find(haystack) }
+      subject { Rure::Regex.new('ab').find(haystack)&.to_a }
 
       context 'when match exists' do
         let(:haystack) { 'xxab' }
-        it { is_expected.to eq(Rure::Match.new(haystack, 2,4)) }
+        it { is_expected.to eq([haystack, 2,4]) }
       end
 
       context 'when a match does not exist' do
@@ -65,9 +65,9 @@ RSpec.describe Rure do
         it 'should yield the non-overlapping matches in order' do
           matches = []
           Rure::Regex.new('ab').each_match(haystack) do |match|
-            matches << match
+            matches << match.to_a
           end
-          expect(matches).to eq [Rure::Match.new(haystack, 1,3), Rure::Match.new(haystack, 4,6)]
+          expect(matches).to eq [[haystack, 1,3], [haystack, 4,6]]
         end
       end
     end

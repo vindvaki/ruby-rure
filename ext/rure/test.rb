@@ -9,19 +9,6 @@ p Rure::Regex.new("a.*c").find_captures("xxabcrr").at_index(0).to_s
 
 p Rure::Regex.new("a(?P<thename>.*)c").find_captures("xxabcrr").at_name('thename').to_s
 
-class Rure::Regex
-  def each_match(haystack)
-    Enumerator.new do |yielder|
-      iter = Rure::Iter.new(self, haystack)
-      loop do
-        match = iter.next
-        break if match.nil?
-        yielder << match
-      end
-    end
-  end
-end
-
 p Rure::Regex.new("abc").each_match("xxabcrabcr").map(&:to_s)
 
 require 'benchmark'
