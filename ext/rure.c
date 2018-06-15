@@ -5,6 +5,7 @@
 static VALUE cRureRegex;
 static VALUE cRureMatch;
 static VALUE cRureCaptures;
+static VALUE cRureIter;
 
 typedef struct rure_regex_data_t {
     rure* ptr;
@@ -13,6 +14,10 @@ typedef struct rure_regex_data_t {
 typedef struct rure_captures_data_t {
     rure_captures* ptr;
 } rure_captures_data_t;
+
+typedef struct rure_iter_data_t {
+    rure_iter* ptr;
+} rure_iter_data_t;
 
 void rure_regex_data_free(void *data_void) {
     rure_regex_data_t *data = (rure_regex_data_t *) data_void;
@@ -29,6 +34,18 @@ VALUE rure_regex_data_alloc(VALUE self) {
 VALUE rure_match_data_alloc(VALUE self) {
     rure_match *data = malloc(sizeof(rure_match));
     return Data_Wrap_Struct(self, 0, free, data);
+}
+
+VALUE rure_iter_data_free(void *data_void) {
+    rure_iter_data_t *data = (rure_iter_data_t *) data_void;
+    rure_iter *ptr = data->ptr;
+    free(data);
+    rure_iter_free(ptr);
+}
+
+VALUE rure_iter_data_alloc(VALUE self) {
+    rure_iter *data = malloc(sizeof(rure_iter_data_t));
+    return Data_Wrap_Struct(self, 0, rure_iter_data_free, data);
 }
 
 void rure_captures_data_free(void *data_void) {
@@ -49,7 +66,7 @@ VALUE rb_rure_captures_initialize(VALUE self, VALUE regex) {
     rure_regex_data_t *regex_data;
     Data_Get_Struct(regex, rure_regex_data_t, regex_data);
     data->ptr = rure_captures_new(regex_data->ptr);
-    rb_iv_set(self, "@pattern", regex);
+    rb_iv_set(self, "@regex", regex);
     return self;
 }
 
@@ -57,6 +74,16 @@ VALUE rb_rure_regex_initialize(VALUE self, VALUE pattern) {
     rure_regex_data_t *data;
     Data_Get_Struct(self, rure_regex_data_t, data);
     data->ptr = rure_compile_must(StringValueCStr(pattern));
+    return self;
+}
+
+VALUE rb_rure_iter_initialize(VALUE self, VALUE regex) {
+    rure_iter_data_t *data;
+    Data_Get_Struct(self, rure_iter_data_t, data);
+    rure_regex_data_t *regex_data;
+    Data_Get_Struct(regex, rure_regex_data_t, regex_data);
+    data->ptr = rure_iter_new(regex_data->ptr);
+    rb_iv_set(self, "@regex", regex);
     return self;
 }
 
@@ -159,7 +186,7 @@ VALUE rb_rure_captures_at_index(VALUE self, VALUE index) {
 }
 
 VALUE rb_rure_captures_at_name(VALUE self, VALUE name) {
-    VALUE pattern = rb_iv_get(self, "@pattern");
+    VALUE pattern = rb_iv_get(self, "@regex");
     rure_regex_data_t *regex_data;
     VALUE regex = Data_Get_Struct(pattern, rure_regex_data_t, regex_data);
     int32_t index = rure_capture_name_index(regex_data->ptr, StringValueCStr(name));
@@ -190,4 +217,8 @@ void Init_rure() {
     rb_define_method(cRureCaptures, "length", rb_rure_captures_len, 0);
     rb_define_method(cRureCaptures, "at_index", rb_rure_captures_at_index, 1);
     rb_define_method(cRureCaptures, "at_name", rb_rure_captures_at_name, 1);
+
+    cRureIter = rb_define_class_under(mRure, "Iter", rb_cObject);
+    rb_define_method(cRureIter, "initialize", rb_rure_iter_initialize, 1);
+    rb_define_alloc_func(cRureIter, rure_iter_data_alloc);
 }
