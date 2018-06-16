@@ -6,7 +6,7 @@ cache:
     - $HOME/.cargo
 
 before_script:
-  - [[ -f $HOME/.cargo/env ]] && curl https://sh.rustup.rs -sSf | sh -s -- -y
+  - "[[ -f $HOME/.cargo/env ]] && curl https://sh.rustup.rs -sSf | sh -s -- -y"
   - source ~/.cargo/env
   - (cd ext/rure/regex-capi && cargo build --release)
   - ruby -v
