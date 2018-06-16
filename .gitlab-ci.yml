@@ -8,6 +8,7 @@ before_script:
   - ruby -v
   - gem install bundler  --no-ri --no-rdoc
   - bundle install -j $(nproc) --path vendor --binstubs
+  - bin/rake compile -- --with-rure-lib=$(pwd)/ext/rure/regex-capi/target/release
 
 #rubocop:
 #  script:
