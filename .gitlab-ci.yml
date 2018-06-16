@@ -3,8 +3,12 @@ image: "ruby:2.5"
 cache:
   paths:
     - vendor/ruby
+    - ~/.cargo
 
 before_script:
+  - rustup curl https://sh.rustup.rs -sSf | sh -s -- -y
+  - source ~/.cargo/env
+  - (cd ext/rure/regex-capi && cargo build --release)
   - ruby -v
   - gem install bundler  --no-ri --no-rdoc
   - bundle install -j $(nproc) --path vendor --binstubs
