@@ -1,7 +1,6 @@
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require "rake/extensiontask"
-require 'rure'
 
 RSpec::Core::RakeTask.new(:spec)
 
@@ -12,6 +11,7 @@ end
 task :default => :spec
 
 task :benchmark do
+  require 'rure'
   require 'benchmark'
   n = 1_000
 
