@@ -1,0 +1,18 @@
+image: "ruby:2.5"
+
+cache:
+  paths:
+    - vendor/ruby
+
+before_script:
+  - ruby -v
+  - gem install bundler  --no-ri --no-rdoc
+  - bundle install -j $(nproc) --path vendor --binstubs
+
+#rubocop:
+#  script:
+#  - rubocop
+
+rspec:
+  script:
+  - bin/rspec
