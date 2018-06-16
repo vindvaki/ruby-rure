@@ -36,7 +36,7 @@ VALUE rure_match_data_alloc(VALUE self) {
     return Data_Wrap_Struct(self, 0, free, data);
 }
 
-VALUE rure_iter_data_free(void *data_void) {
+void rure_iter_data_free(void *data_void) {
     rure_iter_data_t *data = (rure_iter_data_t *) data_void;
     rure_iter *ptr = data->ptr;
     free(data);
@@ -189,7 +189,7 @@ VALUE rb_rure_captures_at_index(VALUE self, VALUE index) {
 VALUE rb_rure_captures_at_name(VALUE self, VALUE name) {
     VALUE pattern = rb_iv_get(self, "@regex");
     rure_regex_data_t *regex_data;
-    VALUE regex = Data_Get_Struct(pattern, rure_regex_data_t, regex_data);
+    Data_Get_Struct(pattern, rure_regex_data_t, regex_data);
     int32_t index = rure_capture_name_index(regex_data->ptr, StringValueCStr(name));
     if (index == -1) {
         return Qnil;
