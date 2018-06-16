@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["hordurf@gmail.com"]
 
   spec.summary       = %q{Ruby wrapper for Rust's Regex crate}
-  spec.homepage      = "https://github.com/vindvaki/ruby-rure"
+  spec.homepage      = "https://gitlab.com/vindvaki/ruby-rure"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|

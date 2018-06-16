@@ -61,7 +61,7 @@ bin/rake compile
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/vindvaki/ruby-rure.
+Bug reports and pull requests are welcome on GitLab at https://gitlab.com/vindvaki/ruby-rure.
 
 ## License
 
