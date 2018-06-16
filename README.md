@@ -1,6 +1,10 @@
 # ruby-rure
 
-A simple native ruby extension wrapper around [the rust regex crate](https://github.com/rust-lang/regex).
+A simple native ruby extension wrapper around [the rust regex crate's C-api](https://github.com/rust-lang/regex/tree/master/regex-capi).
+
+There are cases where this gem will be faster than Ruby's built in `Regexp`, and cases where it will be slower. Refer to [rust-lang/regex/PERFORMANCE.md](https://github.com/rust-lang/regex/blob/master/PERFORMANCE.md) for advice.
+
+As a rule of thumb, you probably don't need this gem. It is probably safe to use.
 
 ## Installation
 
