@@ -3,10 +3,10 @@ image: "ruby:2.5"
 cache:
   paths:
     - vendor/ruby
-    - ~/.cargo
+    - $HOME/.cargo
 
 before_script:
-  - curl https://sh.rustup.rs -sSf | sh -s -- -y
+  - [[ -f $HOME/.cargo/env ]] && curl https://sh.rustup.rs -sSf | sh -s -- -y
   - source ~/.cargo/env
   - (cd ext/rure/regex-capi && cargo build --release)
   - ruby -v
